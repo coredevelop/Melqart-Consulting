@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Filament Admin Concept</title>
+<style>
+:root{--bg:#f8fafc;--ink:#111827;--muted:#64748b;--line:#e5e7eb;--nav:#0f172a;--accent:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;--purple:#7e22ce}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:var(--nav);color:#dbe5f2;padding:22px 16px;position:sticky;top:0;height:100vh}.brand{font-weight:900;font-size:17px;padding:8px 10px 24px}.menu{display:grid;gap:6px}.menu a{color:#cbd5e1;text-decoration:none;padding:11px 12px;border-radius:10px;font-size:14px;cursor:pointer}.menu a.active,.menu a:hover{background:#1e293b;color:#fff}.main{padding:24px 28px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}.top h1{margin:0;font-size:28px;letter-spacing:-.03em}.user{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:13px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px}.card span{font-size:12px;color:var(--muted)}.card b{display:block;font-size:26px;margin-top:5px}.section{display:none}.section.active{display:block}.box{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:18px}.boxtop{padding:15px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.boxtop b{font-size:15px}.search{border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--muted);font-size:12px;background:#fff}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:13px 14px;border-bottom:1px solid #edf0f4;text-align:left;font-size:12px}.table th{font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;background:#fbfcfe}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800}.new{background:#eff6ff;color:#1d4ed8}.wait{background:#fff7ed;color:#c2410c}.prog{background:#f0fdf4;color:#15803d}.qa{background:#faf5ff;color:#7e22ce}.paid{background:#ecfdf5;color:#047857}.lost{background:#fef2f2;color:#b91c1c}.draft{background:#f8fafc;color:#475569}.urgent{color:var(--red);font-weight:800}.muted{color:var(--muted)}.two{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.profile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.profile h3{margin:0 0 4px}.kv{display:grid;grid-template-columns:120px 1fr;gap:8px 12px;font-size:13px;margin-top:18px}.kv div:nth-child(odd){color:var(--muted)}.metricrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.metric{background:#f8fafc;border-radius:12px;padding:12px}.metric b{display:block;font-size:18px}.action{background:#0f172a;color:white;border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}.ghost{background:#fff;color:#0f172a;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-weight:700;cursor:pointer}.actions{display:flex;gap:8px;flex-wrap:wrap}.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.col{background:#f1f5f9;border-radius:14px;padding:12px}.col h4{font-size:12px;margin:0 0 10px;color:#475569}.ticket{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px}.ticket b{font-size:12px}.ticket p{margin:5px 0;color:var(--muted);font-size:11px}.ticket .time{font-size:10px;font-weight:800;color:#b45309}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px}.field{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.field small{display:block;color:var(--muted);margin-bottom:4px}.field b{font-size:13px}.rule{display:grid;grid-template-columns:1.1fr .8fr .9fr .7fr .7fr .7fr .7fr;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid #edf0f4;font-size:12px}.rule.head{background:#fbfcfe;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.marketcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.market{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px}.market h3{margin:0 0 4px;font-size:16px}.market .code{display:inline-block;font-size:10px;font-weight:800;color:#1d4ed8;background:#eff6ff;border-radius:999px;padding:4px 7px;margin-bottom:12px}.market .row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f1f5f9}.docrow{display:grid;grid-template-columns:1.5fr .8fr .8fr .9fr .7fr;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid #edf0f4;font-size:12px}.auto{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.steps{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}.step{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#f8fafc;font-size:12px}.arrow{color:#94a3b8}.note{padding:13px 14px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:12px;margin-bottom:16px}.tabs{display:flex;gap:8px;margin:16px 0}.tab{padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:13px;cursor:pointer}.tab.active{background:#eef4ff;border-color:#bfdbfe;color:#1d4ed8}.panel{display:none}.panel.active{display:block}
+@media(max-width:1000px){.cards{grid-template-columns:1fr 1fr}.marketcards{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr 1fr}.rule{grid-template-columns:1fr 1fr 1fr}.rule>*:nth-child(n+4){display:none}.docrow{grid-template-columns:1.5fr 1fr 1fr}.docrow>*:nth-child(n+4){display:none}}
+@media(max-width:760px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.menu{grid-template-columns:1fr 1fr}.cards,.two,.grid2,.kanban,.marketcards,.formgrid{grid-template-columns:1fr}.main{padding:18px}}
+</style></head><body>
+<div class="app">
+<aside class="side"><div class="brand">Translation Ops</div><nav class="menu">
+<a class="active" data-section="dashboard">Dashboard</a><a data-section="quotes">Quotes</a><a data-section="orders">Orders</a><a data-section="translators">Translators</a><a data-section="pricing">Pricing Rules</a><a data-section="markets">Markets</a><a data-section="documents">Documents</a><a data-section="automation">Automation</a>
+</nav></aside>
+<main class="main"><div class="top"><h1 id="pageTitle">Operations Console</h1><div class="user">Admin • US Market</div></div>
+
+<section id="dashboard" class="section active">
+<div class="cards"><div class="card"><span>New quotes today</span><b>46</b></div><div class="card"><span>Awaiting assignment</span><b>12</b></div><div class="card"><span>Express due &lt; 6h</span><b>4</b></div><div class="card"><span>Quote → order</span><b>31%</b></div></div>
+<div class="tabs"><button class="tab active" onclick="showDash('dash-orders',this)">Orders / Quotes</button><button class="tab" onclick="showDash('dash-translators',this)">Translator view</button><button class="tab" onclick="showDash('dash-pipeline',this)">Pipeline</button></div>
+<div id="dash-orders" class="panel active"><div class="box"><div class="boxtop"><b>Recent orders and quotes</b><div class="search">Search quote, customer, order…</div></div><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Route</th><th>Market</th><th>Tier</th><th>Status</th><th>Deadline</th></tr></thead><tbody>
+<tr><td><b>#1052</b><br><span class="muted">Q-04817</span></td><td>Ana Rodriguez</td><td>ES → EN</td><td>US</td><td>Priority</td><td><span class="badge new">NEW</span></td><td>Tomorrow 16:00</td></tr>
+<tr><td><b>#1050</b><br><span class="muted">Q-04815</span></td><td>Hassan Ali</td><td>AR → EN</td><td>AU</td><td>Express</td><td><span class="badge wait">AWAITING ASSIGNMENT</span></td><td class="urgent">4h 42m</td></tr>
+<tr><td><b>#1047</b><br><span class="muted">Q-04810</span></td><td>Maria Costa</td><td>PT → EN</td><td>CA</td><td>Standard</td><td><span class="badge prog">IN PROGRESS</span></td><td>3 days</td></tr>
+</tbody></table></div></div>
+<div id="dash-translators" class="panel"><div class="two"><div class="box"><div class="boxtop"><b>Translator directory</b><div class="search">Filter by language / market</div></div><table class="table"><tbody><tr><td><b>Lucia Santos</b></td><td>AR, FR → EN</td><td>NAATI</td><td>3 slots</td><td>96%</td></tr><tr><td><b>Daniel Martin</b></td><td>ES, PT → EN</td><td>USCIS</td><td>Available</td><td>98%</td></tr></tbody></table></div><div class="profile"><h3>Lucia Santos</h3><div class="muted">Certified Translator • Australia</div><div class="kv"><div>Languages</div><div>AR, FR → EN</div><div>Certification</div><div>NAATI</div><div>Rate</div><div>A$25 / page</div><div>Availability</div><div>3 slots this week</div></div></div></div></div>
+<div id="dash-pipeline" class="panel"><div class="kanban"><div class="col"><h4>NEW</h4><div class="ticket"><b>#1052 • ES → EN</b><p>Priority • US</p><div class="time">Due tomorrow</div></div></div><div class="col"><h4>AWAITING ASSIGNMENT</h4><div class="ticket"><b>#1050 • AR → EN</b><p>Express • AU</p><div class="time">4h 42m left</div></div></div><div class="col"><h4>IN PROGRESS</h4><div class="ticket"><b>#1047 • PT → EN</b><p>Standard • CA</p><div class="time">3 days left</div></div></div><div class="col"><h4>QA / REVIEW</h4><div class="ticket"><b>#1041 • DE → EN</b><p>Express • US</p><div class="time">5h 58m left</div></div></div></div></div>
+</section>
+
+<section id="quotes" class="section">
+<div class="cards"><div class="card"><span>Open quotes</span><b>128</b></div><div class="card"><span>Checkout started</span><b>34</b></div><div class="card"><span>Recovered today</span><b>9</b></div><div class="card"><span>Lost today</span><b>11</b></div></div>
+<div class="box"><div class="boxtop"><b>Quotes</b><div class="actions"><div class="search">Filter: All markets</div><button class="action">+ Manual quote</button></div></div><table class="table"><thead><tr><th>Quote</th><th>Customer</th><th>Route</th><th>Market</th><th>Prices</th><th>Status</th><th>Source</th></tr></thead><tbody>
+<tr><td><b>Q-04817</b><br><span class="muted">2 files • 4 pages</span></td><td>Ana Rodriguez<br><span class="muted">ana@example.com</span></td><td>ES → EN<br><span class="muted">USCIS</span></td><td>US</td><td>$140 / $185 / $250</td><td><span class="badge wait">CHECKOUT STARTED</span></td><td>Google Ads</td></tr>
+<tr><td><b>Q-04816</b><br><span class="muted">1 file • 2 pages</span></td><td>Mark Evans</td><td>FR → EN<br><span class="muted">Certified</span></td><td>CA</td><td>C$95 / C$125 / C$170</td><td><span class="badge draft">UNPAID</span></td><td>Organic</td></tr>
+<tr><td><b>Q-04812</b><br><span class="muted">3 files • 7 pages</span></td><td>Layla Omar</td><td>AR → EN<br><span class="muted">NAATI</span></td><td>AU</td><td>A$350 / A$455 / A$595</td><td><span class="badge paid">RECOVERED</span></td><td>WhatsApp</td></tr>
+<tr><td><b>Q-04802</b></td><td>James Ford</td><td>DE → EN</td><td>US</td><td>$210 / $275 / $355</td><td><span class="badge lost">LOST</span></td><td>Google Ads</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="orders" class="section">
+<div class="cards"><div class="card"><span>Paid today</span><b>18</b></div><div class="card"><span>Awaiting assignment</span><b>12</b></div><div class="card"><span>In progress</span><b>31</b></div><div class="card"><span>Ready to deliver</span><b>7</b></div></div>
+<div class="box"><div class="boxtop"><b>Paid orders</b><div class="search">Search order, customer, translator…</div></div><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Route</th><th>Tier</th><th>Translator</th><th>Status</th><th>Deadline</th></tr></thead><tbody>
+<tr><td><b>#1052</b><br><span class="muted">Q-04817</span></td><td>Ana Rodriguez</td><td>ES → EN</td><td>Priority</td><td>—</td><td><span class="badge new">NEW</span></td><td>Tomorrow 16:00</td></tr>
+<tr><td><b>#1050</b></td><td>Hassan Ali</td><td>AR → EN</td><td>Express</td><td>—</td><td><span class="badge wait">AWAITING ASSIGNMENT</span></td><td class="urgent">4h 42m</td></tr>
+<tr><td><b>#1047</b></td><td>Maria Costa</td><td>PT → EN</td><td>Standard</td><td>Daniel Martin</td><td><span class="badge prog">IN PROGRESS</span></td><td>3 days</td></tr>
+<tr><td><b>#1041</b></td><td>Felix Braun</td><td>DE → EN</td><td>Express</td><td>Anna Weiss</td><td><span class="badge qa">QA / REVIEW</span></td><td class="urgent">5h 58m</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="translators" class="section">
+<div class="two"><div class="box"><div class="boxtop"><b>Translator directory</b><div class="actions"><div class="search">Filter by market / language</div><button class="action">+ Translator</button></div></div><table class="table"><thead><tr><th>Name</th><th>Languages</th><th>Certification</th><th>Availability</th><th>On-time</th></tr></thead><tbody>
+<tr onclick="showProfile('Lucia Santos','Australia','AR, FR → EN','NAATI','A$25 / page','3 slots this week','4.8','96%','214')" style="cursor:pointer"><td><b>Lucia Santos</b><br><span class="muted">Australia</span></td><td>AR, FR → EN</td><td>NAATI</td><td>3 slots</td><td>96%</td></tr>
+<tr onclick="showProfile('Daniel Martin','United States','ES, PT → EN','USCIS','$18 / page','Available','4.9','98%','336')" style="cursor:pointer"><td><b>Daniel Martin</b><br><span class="muted">United States</span></td><td>ES, PT → EN</td><td>USCIS</td><td>Available</td><td>98%</td></tr>
+<tr onclick="showProfile('Yasmin Rahman','UAE','EN → AR','MoJ','AED 60 / page','1 slot','4.7','94%','188')" style="cursor:pointer"><td><b>Yasmin Rahman</b><br><span class="muted">UAE</span></td><td>EN → AR</td><td>MoJ</td><td>1 slot</td><td>94%</td></tr>
+</tbody></table></div><div class="profile"><h3 id="pName">Lucia Santos</h3><div class="muted" id="pCountry">Certified Translator • Australia</div><div class="kv"><div>Languages</div><div id="pLang">AR, FR → EN</div><div>Certification</div><div id="pCert">NAATI</div><div>Rate</div><div id="pRate">A$25 / page</div><div>Availability</div><div id="pAvail">3 slots this week</div></div><div class="metricrow"><div class="metric"><span class="muted">Quality</span><b id="pQuality">4.8</b></div><div class="metric"><span class="muted">On-time</span><b id="pOntime">96%</b></div><div class="metric"><span class="muted">Orders</span><b id="pOrders">214</b></div></div><button class="action" onclick="demoAlert('Translator assignment')">Assign selected order</button></div></div>
+</section>
+
+<section id="pricing" class="section">
+<div class="note">Pricing is configuration, not code. Staff can update rates, minimums and delivery multipliers per market and language pair.</div>
+<div class="box"><div class="boxtop"><b>Pricing Rules</b><div class="actions"><div class="search">Version: US v4</div><button class="action">+ Pricing rule</button></div></div>
+<div class="rule head"><div>Pair</div><div>Market</div><div>Certification</div><div>Unit</div><div>Retail</div><div>Priority</div><div>Express</div></div>
+<div class="rule"><div><b>ES → EN</b></div><div>US</div><div>USCIS</div><div>Page</div><div>$35</div><div>+30%</div><div>+70%</div></div>
+<div class="rule"><div><b>AR → EN</b></div><div>AU</div><div>NAATI</div><div>Page</div><div>A$50</div><div>+30%</div><div>+70%</div></div>
+<div class="rule"><div><b>PT → EN</b></div><div>ZA</div><div>Sworn</div><div>Word</div><div>R 1.30</div><div>+30%</div><div>+70%</div></div>
+<div class="rule"><div><b>EN → AR</b></div><div>AE</div><div>MoJ</div><div>Page</div><div>AED120</div><div>+30%</div><div><span class="badge lost">Disabled</span></div></div>
+</div>
+</section>
+
+<section id="markets" class="section">
+<div class="marketcards">
+<div class="market"><span class="code">US</span><h3>United States</h3><div class="row"><span>Currency</span><b>USD</b></div><div class="row"><span>Language</span><b>English</b></div><div class="row"><span>Certification</span><b>USCIS</b></div><div class="row"><span>Pricing table</span><b>us_v4</b></div><div class="row"><span>Express</span><b>Enabled</b></div></div>
+<div class="market"><span class="code">AU</span><h3>Australia</h3><div class="row"><span>Currency</span><b>AUD</b></div><div class="row"><span>Language</span><b>English</b></div><div class="row"><span>Certification</span><b>NAATI</b></div><div class="row"><span>Pricing table</span><b>au_v2</b></div><div class="row"><span>Express</span><b>Enabled</b></div></div>
+<div class="market"><span class="code">AE</span><h3>United Arab Emirates</h3><div class="row"><span>Currency</span><b>AED</b></div><div class="row"><span>Language</span><b>English</b></div><div class="row"><span>Certification</span><b>MoJ</b></div><div class="row"><span>Pricing table</span><b>ae_v1</b></div><div class="row"><span>Express</span><b>Partial</b></div></div>
+</div>
+</section>
+
+<section id="documents" class="section">
+<div class="note">Files are stored privately. Translators receive time-limited access only to documents assigned to them.</div>
+<div class="box"><div class="boxtop"><b>Secure Documents</b><div class="search">Retention: 90 days</div></div>
+<div class="docrow" style="background:#fbfcfe;color:#64748b;font-size:10px;text-transform:uppercase"><div>File</div><div>Quote / Order</div><div>Customer</div><div>Access</div><div>Status</div></div>
+<div class="docrow"><div><b>passport_rodriguez.pdf</b><br><span class="muted">PDF • 1.8 MB • 4 pages</span></div><div>Q-04817 / #1052</div><div>Ana Rodriguez</div><div>Staff only</div><div><span class="badge paid">Encrypted</span></div></div>
+<div class="docrow"><div><b>diploma_hassan.pdf</b><br><span class="muted">PDF • 2.3 MB</span></div><div>Q-04815 / #1050</div><div>Hassan Ali</div><div>Staff + assigned translator</div><div><span class="badge paid">Encrypted</span></div></div>
+<div class="docrow"><div><b>translation_final_1047.pdf</b><br><span class="muted">PDF • 940 KB</span></div><div>#1047</div><div>Maria Costa</div><div>Customer link expires in 48h</div><div><span class="badge prog">Ready</span></div></div>
+</div>
+</section>
+
+<section id="automation" class="section">
+<div class="grid2">
+<div class="auto"><h3 style="margin-top:0">Abandoned Quote Recovery</h3><div class="muted">Stops automatically when payment is received.</div><div class="steps"><div class="step"><b>T+0</b><br>Quote summary email</div><div class="arrow">→</div><div class="step"><b>+45 min</b><br>Email + WhatsApp</div><div class="arrow">→</div><div class="step"><b>+24h</b><br>Reminder 2</div><div class="arrow">→</div><div class="step"><b>+48h</b><br>Final reminder</div></div></div>
+<div class="auto"><h3 style="margin-top:0">Performance</h3><div class="metricrow"><div class="metric"><span class="muted">Sent</span><b>386</b></div><div class="metric"><span class="muted">Recovered</span><b>41</b></div><div class="metric"><span class="muted">Recovery</span><b>10.6%</b></div></div><div style="margin-top:16px"><span class="badge paid">Automation active</span></div></div>
+</div>
+<div class="box" style="margin-top:16px"><div class="boxtop"><b>Recent automation activity</b><div class="search">All channels</div></div><table class="table"><thead><tr><th>Quote</th><th>Customer</th><th>Step</th><th>Channel</th><th>Status</th></tr></thead><tbody>
+<tr><td>Q-04816</td><td>Mark Evans</td><td>Reminder 1</td><td>Email + WhatsApp</td><td><span class="badge paid">Sent</span></td></tr>
+<tr><td>Q-04812</td><td>Layla Omar</td><td>Reminder 2</td><td>Email</td><td><span class="badge prog">Recovered</span></td></tr>
+<tr><td>Q-04809</td><td>Ryan Lee</td><td>Final reminder</td><td>Email + WhatsApp</td><td><span class="badge draft">Awaiting</span></td></tr>
+</tbody></table></div>
+</section>
+
+</main></div>
+<script>
+const titles={dashboard:'Operations Console',quotes:'Quotes',orders:'Orders',translators:'Translators',pricing:'Pricing Rules',markets:'Markets',documents:'Documents',automation:'Automation'};
+document.querySelectorAll('.menu a').forEach(a=>a.addEventListener('click',()=>{
+  const id=a.dataset.section;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.menu a').forEach(x=>x.classList.remove('active'));
+  a.classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[id]||'Operations Console';
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+function showDash(id,btn){document.querySelectorAll('#dashboard .panel').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('#dashboard .tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+function showProfile(n,c,l,cert,rate,av,q,on,orders){pName.textContent=n;pCountry.textContent='Certified Translator • '+c;pLang.textContent=l;pCert.textContent=cert;pRate.textContent=rate;pAvail.textContent=av;pQuality.textContent=q;pOntime.textContent=on;pOrders.textContent=orders}
+function demoAlert(name){alert(name+' — visual demo only. No backend is connected.')}
+</script>
+</body></html>
