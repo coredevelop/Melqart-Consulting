@@ -1,0 +1,733 @@
+<meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Financial Reports Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+/* Layout: embedded-admin shell — fixed nav rail left, app canvas right; summary → payouts grid → detail. */
+:root{
+  --bg:#f1f1f1; --surface:#ffffff; --surface-2:#f7f7f7; --line:#e3e3e3; --line-strong:#cfcfcf;
+  --fg:#303030; --fg-muted:#616161; --fg-subtle:#8a8a8a;
+  --nav:#ebebeb; --nav-active:#fafafa;
+  --primary:#303030; --primary-fg:#ffffff;
+  --accent:#0f6e5c; --accent-soft:#e3f3ee;
+  --ok:#0c5132; --ok-bg:#cdfee1; --warn:#5e4200; --warn-bg:#ffef9d; --crit:#8e1f0b; --crit-bg:#fee9e8;
+  --info-bg:#e0f0ff; --info:#00527c;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141414; --surface:#1f1f1f; --surface-2:#262626; --line:#333; --line-strong:#454545;
+  --fg:#e8e8e8; --fg-muted:#b0b0b0; --fg-subtle:#8a8a8a; --nav:#191919; --nav-active:#2a2a2a;
+  --primary:#e8e8e8; --primary-fg:#141414; --accent:#5fd4b6; --accent-soft:#163a32;
+  --ok:#9be9c0; --ok-bg:#12382a; --warn:#ffd970; --warn-bg:#3d3110; --crit:#ffb4a8; --crit-bg:#3d1712;
+  --info-bg:#102c3d; --info:#9fd3f5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141414; --surface:#1f1f1f; --surface-2:#262626; --line:#333; --line-strong:#454545;
+  --fg:#e8e8e8; --fg-muted:#b0b0b0; --fg-subtle:#8a8a8a; --nav:#191919; --nav-active:#2a2a2a;
+  --primary:#e8e8e8; --primary-fg:#141414; --accent:#5fd4b6; --accent-soft:#163a32;
+  --ok:#9be9c0; --ok-bg:#12382a; --warn:#ffd970; --warn-bg:#3d3110; --crit:#ffb4a8; --crit-bg:#3d1712;
+  --info-bg:#102c3d; --info:#9fd3f5; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--font)}
+.demo-flag{background:var(--info-bg);color:var(--info);font-size:13px;padding-block:8px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:calc(100vh - 37px)}
+nav.rail{background:var(--nav);border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+.rail .store{font-weight:600;padding:6px 10px 14px;display:flex;align-items:center;gap:8px}
+.rail .store i{width:22px;height:22px;border-radius:6px;background:var(--accent);display:inline-block}
+.rail a,.rail button.sub{color:var(--fg-muted);text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500}
+.rail button.sub{font:inherit;font-weight:500;background:none;border:0;text-align:left;cursor:pointer;color:var(--fg-muted)}
+.rail button.sub:hover{background:var(--nav-active);color:var(--fg)}
+.rail button.sub:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rail .sec{font-size:12px;color:var(--fg-subtle);padding:14px 10px 4px;font-weight:600}
+.rail .app{color:var(--fg);font-weight:600}
+.rail .sub{padding-left:26px}
+.rail button.sub.on{color:var(--fg)}
+.rail .sub.on{background:var(--nav-active);color:var(--fg);box-shadow:0 1px 0 var(--line)}
+main{min-width:0;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.titlebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:20px;margin:0;font-weight:700;text-wrap:balance}
+.titlebar p{margin:2px 0 0;color:var(--fg-muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,input[type=date],input[type=text],input[type=number]{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:6px 10px}
+.btn{font:inherit;font-weight:600;border-radius:8px;padding:7px 14px;cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg)}
+.btn.primary{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,select:focus-visible,input:focus-visible,.tab:focus-visible,.rowbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card h2{font-size:14px;margin:0;font-weight:650}
+.card-head{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+.metric{padding:14px 16px;border-right:1px solid var(--line)}
+.metric:last-child{border-right:0}
+.metric .k{font-size:12px;color:var(--fg-muted);font-weight:500}
+.metric .v{font-size:19px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:2px}
+.metric.hl .v{color:var(--accent)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 8px 0;border-bottom:1px solid var(--line)}
+.tab{font:inherit;background:none;border:0;padding:8px 12px;color:var(--fg-muted);font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--fg);border-bottom-color:var(--fg)}
+.tab .n{font-size:11px;background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:1px 6px;margin-left:4px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-size:12px;font-weight:600;color:var(--fg-muted);text-align:left;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+td.num,th.num{text-align:right}
+tr:last-child td{border-bottom:0}
+tbody tr.payout,tbody tr.order{cursor:pointer}
+tbody tr.payout:hover td,tbody tr.order:hover td{background:var(--surface-2)}
+.step{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.num-step{flex:none;width:22px;height:22px;border-radius:50%;background:var(--fg);color:var(--bg);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+tr.open td{background:var(--surface-2)}
+.rowbtn{background:none;border:0;font:inherit;color:var(--fg);font-weight:650;cursor:pointer;padding:0;display:inline-flex;gap:6px;align-items:center}
+.chev{display:inline-block;transition:transform .15s;color:var(--fg-subtle)}
+tr.open .chev{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+.sub-meta{color:var(--fg-muted);font-size:12px;font-weight:400}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:550;padding:2px 9px;border-radius:999px}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge.warn{background:var(--warn-bg);color:var(--warn)}
+.badge.cat{background:var(--surface-2);color:var(--fg-muted);border:1px solid var(--line)}
+.badge.cat::before{display:none}
+.detail td{padding:0;background:var(--surface-2)}
+.detail-in{padding:14px 16px 18px;display:flex;flex-direction:column;gap:10px}
+.detail-in table{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.detail-in .cap{font-size:12px;color:var(--fg-muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.mono{font-family:var(--mono);font-size:12.5px}
+.unm td{background:var(--crit-bg)}
+.unm .mono{color:var(--crit);font-weight:500}
+tfoot td{font-weight:650;background:var(--surface-2)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.note{color:var(--fg-muted);font-size:13px;padding:12px 16px;margin:0;border-top:1px solid var(--line)}
+.panel-pad{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.block{border-bottom:1px solid var(--line)}
+.block h3{font-size:14px;margin:0 0 2px;font-weight:650}
+.block p{margin:0}
+.block-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.block .scroll{border:1px solid var(--line);border-radius:10px}
+textarea{font:12.5px/1.5 var(--mono);color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;width:100%;resize:vertical}
+.form-row{display:flex;flex-wrap:wrap;gap:8px}
+.form-row input{flex:1 1 160px;min-width:0}
+label.btn{display:inline-flex;align-items:center}
+label.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:500}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:20;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--surface);border-radius:14px;width:min(920px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line)}
+.modal .card-head{border-bottom:1px solid var(--line)}
+.modal-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.banner{border-radius:10px;padding:10px 12px;font-size:13px}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.banner.ok{background:var(--ok-bg);color:var(--ok)}
+.banner.crit{background:var(--crit-bg);color:var(--crit)}
+.banner.info{background:var(--info-bg);color:var(--info)}
+.badge.info{background:var(--info-bg);color:var(--info)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.steps li{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--fg-subtle)}
+.steps .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line-strong);flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.steps li.run{color:var(--fg)}
+.steps li.run .dot{border-color:var(--accent);border-top-color:transparent;animation:spin .8s linear infinite}
+.steps li.done{color:var(--fg)}
+.steps li.done .dot{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.steps li.fail{color:var(--crit)}
+.steps li.fail .dot{background:var(--crit-bg);border-color:var(--crit);color:var(--crit)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.steps li.run .dot{animation:none;border-top-color:var(--accent)}}
+.perm{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500}
+.field input[type=text]{max-width:420px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+.check input{margin-top:3px}
+pre.csv{margin:0;font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;max-height:46vh;white-space:pre}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--primary);color:var(--primary-fg);padding:9px 16px;border-radius:10px;font-weight:600;z-index:30}
+@media (max-width:1000px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.metric:nth-child(3){border-right:0}.metric:nth-child(-n+3){border-bottom:1px solid var(--line)}.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){.shell{grid-template-columns:minmax(0,1fr)}nav.rail{display:none}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+
+<div class="demo-flag">
+<strong>Demo mockup.</strong> Sample data only, not connected to any store. Order #21126 copies one real order (name removed) to show how an order splits across accounts. Account codes and the export columns follow the client's sample Financial Edge NXT upload file. Sending to Financial Edge NXT is simulated: nothing leaves this page.</div>
+<div class="shell">
+  <nav class="rail" aria-label="Admin navigation">
+    <div class="store">
+<i></i>Store admin</div>
+    <div class="sec">Apps</div>
+    <a class="app">Financial Reports</a>
+    <button class="sub" data-nav="payouts">Journal export</button>
+    <button class="sub" data-nav="mapping">Account mapping</button>
+    <button class="sub" data-nav="fe">Settings</button>
+  </nav>
+  <main>
+    <div class="wrap">
+      <div class="titlebar">
+        <div>
+<h1>Journal export</h1>
+<p>Weekly and on-demand journal entries, grouped by bank payout.</p>
+</div>
+        <div class="actions">
+          <select id="range" aria-label="Date range">
+            <option value="last">Last week · Nov 9 – 15, 2026</option>
+            <option value="this">This week · Nov 16 – 22, 2026</option>
+            <option value="mtd" selected>Month to date · Nov 1 – 21, 2026</option>
+            <option value="custom">Custom range…</option>
+          </select>
+          <span id="customWrap" hidden><input type="date" id="from" value="2026-11-01" aria-label="From"> <input type="date" id="to" value="2026-11-21" aria-label="To"></span>
+          <button class="btn" id="exportBtn">Download CSV</button>
+          <button class="btn primary" id="sendBtn">Send to Financial Edge NXT</button>
+        </div>
+      </div>
+
+      <section class="card" aria-label="Summary">
+        <div class="metrics" id="metrics"></div>
+      </section>
+
+      <section class="card">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" data-tab="payouts" aria-selected="true">Payouts</button>
+          <button class="tab" role="tab" data-tab="categories" aria-selected="false">By category</button>
+          <button class="tab" role="tab" data-tab="tx" aria-selected="false">Transactions</button>
+          <button class="tab" role="tab" data-tab="mapping" aria-selected="false">Account mapping<span class="n" id="unmCount" hidden></span></button>
+          <button class="tab" role="tab" data-tab="fe" aria-selected="false">Financial Edge NXT</button>
+        </div>
+        <div id="panel"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+const TAX = 0.0635;
+const ACCOUNTS = {
+  '01-111100':{name:'Checking Account',type:'Asset'},
+  '01-211300':{name:'CT Sales Tax Payable',type:'Liability'},
+  '01-413100':{name:'Individual',type:'Revenue'},
+  '01-413150':{name:'Membership',type:'Revenue'},
+  '01-421000':{name:'General Admission',type:'Revenue'},
+  '01-423000':{name:'Catalogue Sales',type:'Revenue'},
+  '01-431100':{name:'Adult Programs',type:'Revenue'},
+  '01-433100':{name:'Preschool (AOS)',type:'Revenue'},
+  '01-473000':{name:'Store Items',type:'Revenue'},
+  '01-533210':{name:'General Office - Admin Other',type:'Expense'},
+};
+const FIXED = {'01-111100':'Bank deposits','01-533210':'Processing fees','01-211300':'Sales tax'};
+const TYPE_BY_DIGIT = {'1':'Asset','2':'Liability','3':'Net assets','4':'Revenue','5':'Expense'};
+const acctName = k => (k && ACCOUNTS[k]) ? ACCOUNTS[k].name : '';
+const revenueAccts = () => Object.keys(ACCOUNTS).filter(k=>ACCOUNTS[k].type==='Revenue').sort();
+// Default account per Shopify product type. Products inherit it unless they have an exception.
+const RULES = {'Admission':'01-421000','Guided tours':'01-431100','Kids & camps':'01-433100','Special tours':null,
+  'Membership':'01-413150','Donation':'01-413100','Catalogue':'01-423000','Shop':'01-473000'};
+const PRODUCTS = {
+  'General Admission':       {app:'Cowlendar Booking',   cat:'Tickets',     type:'Admission',     taxable:false},
+  'All Ages Discovery Tour': {app:'Cowlendar Booking',   cat:'Tickets',     type:'Guided tours',  taxable:false},
+  'Seniors-Only Tour':       {app:'Cowlendar Booking',   cat:'Tickets',     type:'Guided tours',  taxable:false},
+  'Story-Time for Kids':     {app:'Cowlendar Booking',   cat:'Tickets',     type:'Kids & camps',  taxable:false},
+  'Summer Art Camp':         {app:'Cowlendar Booking',   cat:'Tickets',     type:'Kids & camps',  taxable:false},
+  'Curator-Led Tour':        {app:'Cowlendar Booking',   cat:'Tickets',     type:'Special tours', taxable:false},
+  'Individual Membership':   {app:'Appstle Memberships', cat:'Memberships', type:'Membership',    taxable:false},
+  'Family Membership':       {app:'Appstle Memberships', cat:'Memberships', type:'Membership',    taxable:false},
+  'Patron Membership':       {app:'Appstle Memberships', cat:'Memberships', type:'Membership',    taxable:false},
+  'Annual Fund Donation':    {app:'DonateMe',            cat:'Donations',   type:'Donation',      taxable:false},
+  'Exhibition Catalogue':    {app:'Shopify store',       cat:'Store',       type:'Catalogue',     taxable:true},
+  'Zak Prekop: Durations':   {app:'Shopify store',       cat:'Store',       type:'Catalogue',     taxable:true},
+  'Tote Bag':                {app:'Shopify store',       cat:'Store',       type:'Shop',          taxable:true},
+  'Artist Print':            {app:'Shopify store',       cat:'Store',       type:'Shop',          taxable:true},
+  'Enamel Pin':              {app:'Shopify store',       cat:'Store',       type:'Shop',          taxable:true},
+  'Greeting Cards':          {app:'Shopify store',       cat:'Store',       type:'Shop',          taxable:true},
+  'Party Cake Die Cut Card': {app:'Shopify store',       cat:'Store',       type:'Shop',          taxable:true},
+};
+Object.values(PRODUCTS).forEach(p=>p.override=null);
+PRODUCTS['Summer Art Camp'].override='01-433100';
+const acctFor = n => PRODUCTS[n].override || RULES[PRODUCTS[n].type] || null;
+const SAMPLE_COA = `Account Number,Description,Account Type
+01-111100,Checking Account,Asset
+01-211300,CT Sales Tax Payable,Liability
+01-413100,Individual,Revenue
+01-413150,Membership,Revenue
+01-413160,Corporate Membership,Revenue
+01-421000,General Admission,Revenue
+01-423000,Catalogue Sales,Revenue
+01-431100,Adult Programs,Revenue
+01-431200,Lectures & Talks,Revenue
+01-433100,Preschool (AOS),Revenue
+01-473000,Museum Store Items,Revenue
+01-533210,General Office - Admin Other,Expense
+Total,,`;
+let coaText = '', coaPreview = null;
+const CATS = ['Store','Tickets','Memberships','Donations'];
+const CAT_LABEL = {Store:'Store orders',Tickets:'Tickets',Memberships:'Memberships',Donations:'Donations'};
+
+// Orders: [order no, customer, channel, [[product, qty, unit $, item discount $]], order discount $, discount name]
+// Refunds: {refund: order no, items: [[product, $]]}. Payout `date` is when money reaches the bank; `txDate` is when the orders were paid.
+const ON='Online Store', POS='Point of Sale';
+const PAYOUTS = [
+  {id:'147905512230', date:'2026-11-05', txDate:'2026-11-03', orders:[[21040,'Guest',ON,[['General Admission',2,15],['Tote Bag',1,28]]]]},
+  {id:'148120334512', date:'2026-11-11', txDate:'2026-11-09', orders:[
+    [21089,'Donor A',ON,[['Family Membership',1,250]]],
+    [21091,'Donor B',ON,[['Individual Membership',1,90]]],
+    [21093,'Guest',ON,[['General Admission',3,15]]],
+    [21094,'Guest',POS,[['Exhibition Catalogue',1,45],['Tote Bag',1,28]]],
+    [21095,'Member',POS,[['Artist Print',1,120],['Enamel Pin',1,12]],13.20,'Member']]},
+  {id:'148266901873', date:'2026-11-12', txDate:'2026-11-10', orders:[
+    [21101,'Guest',ON,[['General Admission',2,15]]],
+    [21102,'Donor F',ON,[['Annual Fund Donation',1,100]]],
+    [21103,'Guest',POS,[['Enamel Pin',2,12]]]]},
+  {id:'148301458826', date:'2026-11-13', txDate:'2026-11-11', orders:[
+    [21108,'Parent G',ON,[['Summer Art Camp',1,228]]],
+    [21109,'Guest',POS,[['Exhibition Catalogue',1,36],['Tote Bag',1,28]]],
+    [21110,'Guest',ON,[['Curator-Led Tour',2,10]]],
+    {refund:21094, items:[['Tote Bag',28]]}]},
+  {id:'148359027114', date:'2026-11-14', txDate:'2026-11-12', orders:[
+    [21112,'Donor H',ON,[['Patron Membership',1,500]]],
+    [21113,'Donor I',ON,[['Annual Fund Donation',1,250]]],
+    [21114,'School group',ON,[['General Admission',4,15]],6,'School group']]},
+  {id:'148402776395', date:'2026-11-17', txDate:'2026-11-14', orders:[
+    [21116,'Guest',ON,[['Story-Time for Kids',3,12]]],
+    [21117,'Guest',ON,[['Seniors-Only Tour',2,10]]],
+    [21118,'Guest',POS,[['Artist Print',1,120],['Enamel Pin',1,12]]],
+    [21119,'Donor J',ON,[['Individual Membership',1,90]]]]},
+  {id:'148730118842', date:'2026-11-18', txDate:'2026-11-16', orders:[
+    [21126,'Member',POS,[['Zak Prekop: Durations',1,28,5.60],['Greeting Cards',1,6,1.20],['Party Cake Die Cut Card',1,7]],3.42,'Member'],
+    [21127,'Guest',ON,[['General Admission',2,15]]]]},
+  {id:'148801264409', date:'2026-11-19', txDate:'2026-11-17', orders:[
+    [21130,'Donor K',ON,[['Family Membership',1,250]]],
+    [21131,'Guest',ON,[['General Admission',2,15],['All Ages Discovery Tour',1,12]]]]},
+];
+
+const c = n => Math.round(n*100);
+const money = v => (v<0?'-':'')+'$'+(Math.abs(v)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const plain = v => (v/100).toFixed(2);
+const d = s => new Date(s+'T12:00:00');
+const usDate = s => { const x=d(s); return (x.getMonth()+1)+'/'+x.getDate()+'/'+x.getFullYear(); };
+const niceDate = s => d(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+const esc = s => String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+
+function buildPayout(p){
+  const tx=[], orders=[]; let charges=0, refunds=0, fees=0;
+  for(const o of p.orders){
+    if(o.refund){
+      const rows=[]; let total=0;
+      for(const [name,amt] of o.items){
+        const pr=PRODUCTS[name], a=c(amt), t=pr.taxable?Math.round(a*TAX):0;
+        rows.push({...pr, no:o.refund, refund:true, date:p.txDate, customer:'', channel:'', name, qty:1, gross:0, lineDisc:0, orderDisc:0, disc:0, net:-a, tax:-t, refundAmt:a+t, acct:acctFor(name), payout:p.id});
+        total+=a+t;
+      }
+      tx.push(...rows); refunds+=total;
+      orders.push({no:o.refund, type:'Refund', date:p.txDate, channel:'', customer:'', charge:-total, fee:0, net:-total, lines:rows, payout:p.id});
+      continue;
+    }
+    const [no,cust,channel,items,odisc=0,label='']=o;
+    const lines=items.map(([name,qty,price,ld=0])=>({name,qty,price:c(price),gross:c(qty*price),lineDisc:c(ld)}));
+    // Share the order-level discount across products in proportion to their price, like Shopify does.
+    const base=lines.map(l=>l.gross-l.lineDisc), baseTot=base.reduce((s,x)=>s+x,0), od=c(odisc); let left=od;
+    lines.forEach((l,i)=>{ const share=i===lines.length-1?left:Math.round(od*base[i]/baseTot); left-=share; l.orderDisc=share; l.net=base[i]-share; l.tax=0; });
+    const taxable=lines.filter(l=>PRODUCTS[l.name].taxable), taxBase=taxable.reduce((s,l)=>s+l.net,0), taxTot=Math.round(taxBase*TAX); let tl=taxTot;
+    taxable.forEach((l,i)=>{ const t=i===taxable.length-1?tl:Math.round(taxTot*l.net/taxBase); tl-=t; l.tax=t; });
+    const charge=lines.reduce((s,l)=>s+l.net+l.tax,0);
+    const fee=channel===POS?Math.round(charge*0.026)+10:Math.round(charge*0.029)+30;
+    const rows=lines.map(l=>({...PRODUCTS[l.name], no, date:p.txDate, customer:cust, channel, name:l.name, qty:l.qty, price:l.price, gross:l.gross, lineDisc:l.lineDisc, orderDisc:l.orderDisc, disc:l.lineDisc+l.orderDisc, net:l.net, tax:l.tax, refundAmt:0, acct:acctFor(l.name), payout:p.id}));
+    tx.push(...rows);
+    orders.push({no, type:'Charge', date:p.txDate, channel, customer:cust, charge, fee, net:charge-fee, lines:rows, discLabel:label, payout:p.id});
+    charges+=charge; fees+=fee;
+  }
+  const net=charges-refunds-fees;
+  const L=[]; const ref=`Shopify Payout #${p.id}`;
+  L.push({acct:'01-111100',debit:net,ref});
+  L.push({acct:'01-533210',debit:fees,ref:'Shopify Fees'});
+  const agg={};
+  for(const t of tx.filter(t=>!t.refund)){
+    const key=t.acct||('UNMAPPED:'+t.name);
+    if(t.cat==='Memberships'||t.cat==='Donations'){ L.push({acct:t.acct,credit:t.net,ref:`Shopify #${t.no} ${t.customer}`,product:t.name}); continue; }
+    agg[key]=agg[key]||{acct:t.acct,credit:0,ref:t.acct?(t.cat==='Store'?`Shopify ${t.type} CT Sales`:`Shopify ${CAT_LABEL[t.cat]}`):`Shopify ${t.name}`,product:t.name};
+    agg[key].credit+=t.net;
+  }
+  Object.values(agg).forEach(x=>L.push(x));
+  const salesTax=tx.filter(t=>!t.refund).reduce((s,t)=>s+t.tax,0);
+  if(salesTax) L.push({acct:'01-211300',credit:salesTax,ref:'Shopify CT Sales Tax'});
+  for(const t of tx.filter(t=>t.refund)){
+    L.push({acct:t.acct,debit:-t.net,ref:`Shopify Refund #${t.no} ${t.name}`,product:t.name});
+    if(t.tax) L.push({acct:'01-211300',debit:-t.tax,ref:`Shopify Refund CT Sales Tax #${t.no}`});
+  }
+  L.forEach(l=>{l.date=p.date; l.debit=l.debit||0; l.credit=l.credit||0;});
+  const unmapped=[...new Set(tx.filter(t=>!t.acct).map(t=>t.name))];
+  return {...p, tx, orders, charges, refunds, fees, net, lines:L, unmapped, orderCount:orders.filter(o=>o.type==='Charge').length};
+}
+
+const RANGES={last:['2026-11-09','2026-11-15'],this:['2026-11-16','2026-11-22'],mtd:['2026-11-01','2026-11-21']};
+let state={range:'mtd', tab:'payouts', open:new Set(['148730118842']), openTx:new Set(['21126'])};
+try{ const t=localStorage.getItem('fr-tab'); if(['payouts','categories','tx','mapping','fe'].includes(t)) state.tab=t; }catch(e){}
+
+// Financial Edge NXT connection (simulated). The real app calls Blackbaud SKY API General Ledger endpoints.
+const FE={connected:false, env:'Financial Edge NXT (production)', user:'Finance user', leaveOpen:true, project:'', simulateError:false, nextNo:1084,
+  sent:{'147905512230':1071},
+  batches:[{no:1071, desc:'Shopify payouts Nov 1 – 8, 2026', payouts:['147905512230'], status:'Posted', created:'Nov 9, 2026'}]};
+function batchTotals(b){ const ps=b.payouts.map(id=>buildPayout(PAYOUTS.find(p=>p.id===id))); const ls=ps.flatMap(p=>p.lines);
+  return {entries:ls.length, dr:ls.reduce((s,l)=>s+l.debit,0)}; }
+function feBadge(id){ const no=FE.sent[id]; if(!no) return '<span class="badge cat">Not sent</span>';
+  const b=FE.batches.find(x=>x.no===no);
+  return b.status==='Posted'?`<span class="badge ok">Posted · batch ${no}</span>`:`<span class="badge info">Batch ${no} · not posted</span>`; }
+
+function currentRange(){
+  if(state.range==='custom') return [document.getElementById('from').value||'2026-11-01', document.getElementById('to').value||'2026-11-30'];
+  return RANGES[state.range];
+}
+function data(){
+  const [a,b]=currentRange();
+  const payouts=PAYOUTS.filter(p=>p.date>=a&&p.date<=b).map(buildPayout);
+  const tx=payouts.flatMap(p=>p.tx);
+  const unmapped=[...new Set(payouts.flatMap(p=>p.unmapped))];
+  return {a,b,payouts,tx,unmapped};
+}
+
+function renderMetrics(D){
+  const sales=D.tx.filter(t=>!t.refund);
+  const gross=sales.reduce((s,t)=>s+t.gross,0), disc=sales.reduce((s,t)=>s+t.disc,0);
+  const ref=D.tx.filter(t=>t.refund).reduce((s,t)=>s+t.refundAmt,0);
+  const tax=D.tx.reduce((s,t)=>s+t.tax,0), fees=D.payouts.reduce((s,p)=>s+p.fees,0), net=D.payouts.reduce((s,p)=>s+p.net,0);
+  const m=[['Gross sales',gross],['Discounts',-disc],['Refunds',-ref],['Sales tax collected',tax],['Processing fees',-fees],['Net deposited',net]];
+  document.getElementById('metrics').innerHTML=m.map((x,i)=>`<div class="metric${i===5?' hl':''}"><div class="k">${x[0]}</div><div class="v">${money(x[1])}</div></div>`).join('');
+}
+
+function journalTable(lines){
+  const dr=lines.reduce((s,l)=>s+l.debit,0), cr=lines.reduce((s,l)=>s+l.credit,0);
+  return `<div class="scroll"><table><thead><tr><th>Account</th><th>Description</th><th>Journal reference</th><th class="num">Debit</th><th class="num">Credit</th></tr></thead><tbody>${
+    lines.map(l=>`<tr class="${l.acct?'':'unm'}"><td class="mono">${l.acct||'Needs account'}</td><td>${l.acct?esc(acctName(l.acct)):'<em>'+esc(l.product)+'</em> has no account code'}</td><td>${esc(l.ref)}</td><td class="num">${l.debit?money(l.debit):''}</td><td class="num">${l.credit?money(l.credit):''}</td></tr>`).join('')
+  }</tbody><tfoot><tr><td colspan="3">Total ${dr===cr?'<span class="badge ok">Balanced</span>':'<span class="badge warn">Out of balance</span>'}</td><td class="num">${money(dr)}</td><td class="num">${money(cr)}</td></tr></tfoot></table></div>`;
+}
+
+function shopifyTxTable(p){
+  const ch=p.orders.reduce((s,o)=>s+o.charge,0), fe=p.orders.reduce((s,o)=>s+o.fee,0);
+  return `<div class="scroll"><table><thead><tr><th>Date</th><th>Type</th><th>Order</th><th>Channel</th><th class="num">Charge</th><th class="num">Fee</th><th class="num">Net</th></tr></thead><tbody>${
+    p.orders.map(o=>`<tr><td>${niceDate(o.date)}</td><td>${o.type}</td><td><strong>#${o.no}</strong></td><td>${o.channel||'—'}</td><td class="num">${money(o.charge)}</td><td class="num">${o.fee?money(-o.fee):'—'}</td><td class="num">${money(o.net)}</td></tr>`).join('')
+  }</tbody><tfoot><tr><td colspan="4">Payout total</td><td class="num">${money(ch)}</td><td class="num">${money(-fe)}</td><td class="num">${money(p.net)}</td></tr></tfoot></table></div>`;
+}
+function panelPayouts(D){
+  if(!D.payouts.length) return `<p class="note">No payouts in this date range.</p>`;
+  let rows='';
+  for(const p of D.payouts){
+    const open=state.open.has(p.id);
+    const status=p.unmapped.length?`<span class="badge warn">${p.unmapped.length} unmapped product</span>`:`<span class="badge ok">Ready</span>`;
+    const cats=[...new Set(p.tx.map(t=>t.cat))].map(x=>`<span class="badge cat">${CAT_LABEL[x]}</span>`).join(' ');
+    const nRef=p.orders.filter(o=>o.type==='Refund').length;
+    rows+=`<tr class="payout${open?' open':''}" data-id="${p.id}"><td><button class="rowbtn" aria-expanded="${open}"><span class="chev">›</span>#${p.id}</button><div class="sub-meta">${p.orderCount} orders${nRef?` · ${nRef} refund`:''} · paid ${niceDate(p.txDate)}</div></td>
+      <td>${niceDate(p.date)}</td><td>${cats}</td><td class="num">${money(p.charges)}</td><td class="num">${p.refunds?money(-p.refunds):'—'}</td><td class="num">${money(-p.fees)}</td><td class="num"><strong>${money(p.net)}</strong></td><td>${status}</td><td>${feBadge(p.id)}</td></tr>`;
+    if(open) rows+=`<tr class="detail"><td colspan="9"><div class="detail-in">
+      <div class="step"><span class="num-step">1</span><div><strong>Shopify transactions</strong><div class="sub-meta">One row per order, as in Finance → Payouts in Shopify admin.</div></div></div>
+      ${shopifyTxTable(p)}
+      <div class="step"><span class="num-step">2</span><div><strong>Journal entry for Financial Edge NXT</strong>, posted ${usDate(p.date)}<div class="sub-meta">Each order is split by product into account codes. Fees and sales tax get one line each. See the Transactions tab for the split of each order.</div></div></div>
+      ${journalTable(p.lines)}</div></td></tr>`;
+  }
+  return `<div class="scroll"><table><thead><tr><th>Payout</th><th>Deposited</th><th>Includes</th><th class="num">Charges</th><th class="num">Refunds</th><th class="num">Fees</th><th class="num">Net to bank</th><th>Mapping</th><th>Financial Edge NXT</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="note">Select a payout to see its Shopify transactions and the journal entry made from them. The entry balances: the bank deposit and fees on the debit side equal revenue, sales tax and refunds on the credit side. The last column shows whether the payout is already in a Financial Edge NXT batch, so it is never sent twice.</p>`;
+}
+
+function panelCategories(D){
+  const rows=CATS.map(cat=>{
+    const t=D.tx.filter(x=>x.cat===cat);
+    const gross=t.filter(x=>!x.refund).reduce((s,x)=>s+x.gross,0), disc=t.reduce((s,x)=>s+x.disc,0),
+      ref=t.filter(x=>x.refund).reduce((s,x)=>s+(-x.net),0), tax=t.reduce((s,x)=>s+x.tax,0);
+    return {cat,gross,disc,ref,tax,net:gross-disc-ref,n:new Set(t.filter(x=>!x.refund).map(x=>x.no)).size};
+  });
+  const tot=rows.reduce((a,r)=>({gross:a.gross+r.gross,disc:a.disc+r.disc,ref:a.ref+r.ref,tax:a.tax+r.tax,net:a.net+r.net,n:a.n+r.n}),{gross:0,disc:0,ref:0,tax:0,net:0,n:0});
+  const tr=r=>`<td class="num">${r.n}</td><td class="num">${money(r.gross)}</td><td class="num">${r.disc?money(-r.disc):'—'}</td><td class="num">${r.ref?money(-r.ref):'—'}</td><td class="num">${r.tax?money(r.tax):'—'}</td><td class="num"><strong>${money(r.net)}</strong></td>`;
+  const byAcct={};
+  D.tx.forEach(t=>{const k=t.acct||'Needs account'; byAcct[k]=(byAcct[k]||0)+t.net;});
+  return `<div class="grid2"><div class="scroll"><table><thead><tr><th>Category</th><th>Source app</th><th class="num">Orders</th><th class="num">Gross</th><th class="num">Discounts</th><th class="num">Refunds</th><th class="num">Tax</th><th class="num">Net revenue</th></tr></thead><tbody>${
+    rows.map(r=>`<tr><td><strong>${CAT_LABEL[r.cat]}</strong></td><td class="sub-meta">${{Store:'Shopify store (online &amp; POS)',Tickets:'Cowlendar Booking',Memberships:'Appstle',Donations:'DonateMe'}[r.cat]}</td>${tr(r)}</tr>`).join('')
+  }</tbody><tfoot><tr><td colspan="2">All categories</td>${tr(tot)}</tr></tfoot></table></div>
+  <div class="scroll"><table><thead><tr><th>Account</th><th>Description</th><th class="num">Net revenue</th></tr></thead><tbody>${
+    Object.entries(byAcct).sort().map(([k,v])=>`<tr class="${acctName(k)?'':'unm'}"><td class="mono">${k}</td><td>${esc(acctName(k))||'Map in Account mapping'}</td><td class="num">${money(v)}</td></tr>`).join('')
+  }</tbody></table></div></div><p class="note">Summary for ${niceDate(D.a)} – ${niceDate(D.b)}. Card payments through Shopify Payments, online and at the POS.</p>`;
+}
+
+function panelTx(D){
+  const orders=D.payouts.flatMap(p=>p.orders);
+  if(!orders.length) return `<p class="note">No transactions in this date range.</p>`;
+  let rows='';
+  for(const o of orders){
+    const k=(o.type==='Refund'?'r':'')+o.no, open=state.openTx.has(k), unm=o.lines.some(l=>!l.acct);
+    rows+=`<tr class="order${open?' open':''}" data-k="${k}"><td><button class="rowbtn" aria-expanded="${open}"><span class="chev">›</span>#${o.no}</button></td><td>${niceDate(o.date)}</td><td>${o.type}</td><td>${o.channel||'—'}</td><td>${esc(o.customer||'—')}</td><td class="num">${o.lines.length}</td><td class="num">${money(o.charge)}</td><td class="num">${o.fee?money(-o.fee):'—'}</td><td class="num"><strong>${money(o.net)}</strong></td><td>${unm?'<span class="badge warn">Needs account</span>':`<span class="sub-meta">#${o.payout}</span>`}</td></tr>`;
+    if(open){
+      const sn=o.lines.reduce((s,l)=>s+l.net,0), st=o.lines.reduce((s,l)=>s+l.tax,0);
+      rows+=`<tr class="detail"><td colspan="10"><div class="detail-in"><div class="cap"><span>How ${o.type==='Refund'?'refund of ':''}order #${o.no} splits into account codes${o.discLabel?` · order discount “${esc(o.discLabel)}” is shared across products by price`:''}</span></div>
+      <div class="scroll"><table><thead><tr><th>Product</th><th>Product type</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Item discount</th><th class="num">Order discount share</th><th class="num">Revenue</th><th class="num">Tax</th><th>Account</th></tr></thead><tbody>${
+        o.lines.map(l=>`<tr class="${l.acct?'':'unm'}"><td>${esc(l.name)}</td><td>${esc(l.type)}</td><td class="num">${l.qty}</td><td class="num">${l.refund?'—':money(l.gross)}</td><td class="num">${l.lineDisc?money(-l.lineDisc):'—'}</td><td class="num">${l.orderDisc?money(-l.orderDisc):'—'}</td><td class="num">${money(l.net)}</td><td class="num">${l.tax?money(l.tax):'—'}</td><td class="mono">${l.acct?l.acct+' '+esc(acctName(l.acct)):'Needs account'}</td></tr>`).join('')
+      }</tbody><tfoot><tr><td colspan="6">Revenue ${money(sn)} + tax ${money(st)} = ${o.type==='Refund'?'refund':'charge'} ${money(o.charge)}</td><td class="num">${money(sn)}</td><td class="num">${money(st)}</td><td></td></tr></tfoot></table></div></div></td></tr>`;
+    }
+  }
+  return `<div class="scroll"><table><thead><tr><th>Order</th><th>Paid</th><th>Type</th><th>Channel</th><th>Customer</th><th class="num">Products</th><th class="num">Charge</th><th class="num">Fee</th><th class="num">Net</th><th>Payout</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="note">One row per order, as Shopify shows it. Select an order to see how it splits into products and account codes. Order #21126 copies a real store order (customer name removed): one catalogue and two shop items, so its revenue goes to two accounts.</p>`;
+}
+
+function splitCsv(line){
+  const out=[]; let cur='', q=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];
+    if(q){ if(ch==='"'&&line[i+1]==='"'){cur+='"';i++;} else if(ch==='"') q=false; else cur+=ch; }
+    else if(ch==='"') q=true; else if(ch===','){out.push(cur);cur='';} else cur+=ch;}
+  out.push(cur); return out.map(s=>s.trim());
+}
+function parseCoa(text){
+  const rows=[];
+  text.split(/\r?\n/).forEach((line,i)=>{
+    if(!line.trim()) return;
+    const [code='',name='',typeIn='']=splitCsv(line);
+    if(i===0 && /account|number|code/i.test(code)) return;
+    if(!/^\d{2}-\d{6}$/.test(code)||!name){ rows.push({code:code||'(blank)',name,status:'invalid'}); return; }
+    const type=typeIn||TYPE_BY_DIGIT[code[3]]||'Other', ex=ACCOUNTS[code];
+    rows.push({code,name,type,old:ex&&ex.name,status:!ex?'new':(ex.name!==name||ex.type!==type)?'updated':'same'});
+  });
+  return rows;
+}
+function usedBy(code){
+  const n=Object.keys(PRODUCTS).filter(p=>acctFor(p)===code).length;
+  return FIXED[code]?FIXED[code]:n?`${n} product${n>1?'s':''}`:'—';
+}
+function panelMapping(){
+  const opts=(a,first)=>`<option value="">${first}</option>`+revenueAccts().map(k=>`<option value="${k}"${k===a?' selected':''}>${k} · ${esc(acctName(k))}</option>`).join('');
+  const STATUS={new:'<span class="badge ok">New</span>',updated:'<span class="badge warn">Name changes</span>',same:'<span class="badge cat">No change</span>',invalid:'<span class="badge warn">Skipped</span>'};
+  const preview=coaPreview?(()=>{
+    const ok=coaPreview.filter(r=>r.status==='new'||r.status==='updated');
+    return `<div class="banner ${ok.length?'ok':'warn'}">Found ${coaPreview.length} rows: ${coaPreview.filter(r=>r.status==='new').length} new, ${coaPreview.filter(r=>r.status==='updated').length} renamed, ${coaPreview.filter(r=>r.status==='same').length} unchanged, ${coaPreview.filter(r=>r.status==='invalid').length} skipped. Nothing is saved until you confirm.</div>
+    <div class="scroll"><table><thead><tr><th>Status</th><th>Account</th><th>Description</th><th>Type</th></tr></thead><tbody>${
+      coaPreview.map(r=>`<tr><td>${STATUS[r.status]}</td><td class="mono">${esc(r.code)}</td><td>${esc(r.name)}${r.status==='updated'?`<div class="sub-meta">was “${esc(r.old)}”</div>`:''}${r.status==='invalid'?'<div class="sub-meta">Not an account number in 01-000000 format</div>':''}</td><td>${esc(r.type||'')}</td></tr>`).join('')
+    }</tbody></table></div>
+    <div class="actions"><button class="btn primary" id="coaImport" ${ok.length?'':'disabled'}>Import ${ok.length} account${ok.length===1?'':'s'}</button><button class="btn" id="coaCancel">Cancel</button></div>`;})():'';
+  const accts=Object.keys(ACCOUNTS).sort();
+  const types=Object.keys(RULES);
+  const prods=Object.entries(PRODUCTS).sort((x,y)=>(acctFor(x[0])?1:0)-(acctFor(y[0])?1:0)||x[1].type.localeCompare(y[1].type));
+  return `
+  <div class="panel-pad block">
+    <div class="block-head"><div><h3>1. Chart of accounts</h3><p class="sub-meta">${FE.connected?'Read the account list straight from Financial Edge NXT, import a CSV export, or add accounts one at a time.':'Import the account list exported from Financial Edge NXT, or add accounts one at a time. Once connected, the list can be read straight from Financial Edge NXT.'}</p></div>
+      <div class="actions"><button class="btn${FE.connected?' primary':''}" id="coaSync" ${FE.connected?'':'disabled title="Connect Financial Edge NXT first"'}>Sync from Financial Edge NXT</button><label class="btn" for="coaFile">Choose CSV file</label><input type="file" id="coaFile" accept=".csv,text/csv,text/plain" hidden><button class="btn" id="coaSample">Use sample export</button></div></div>
+    <label class="sub-meta" for="coaText">Or paste rows: account number, description, type (type is optional)</label>
+    <textarea id="coaText" rows="4" placeholder="01-431200,Lectures &amp; Talks,Revenue">${esc(coaText)}</textarea>
+    <div class="actions"><button class="btn" id="coaPreviewBtn">Preview import</button></div>
+    ${preview}
+    <div class="scroll"><table><thead><tr><th>Account</th><th>Description</th><th>Type</th><th>Used by</th></tr></thead><tbody>${
+      accts.map(k=>`<tr><td class="mono">${k}</td><td>${esc(ACCOUNTS[k].name)}</td><td>${ACCOUNTS[k].type}</td><td class="sub-meta">${usedBy(k)}</td></tr>`).join('')
+    }</tbody></table></div>
+    <div class="form-row"><input type="text" id="newCode" placeholder="01-000000" aria-label="New account number"><input type="text" id="newName" placeholder="Description" aria-label="New account description"><button class="btn" id="addAcct">Add account</button></div>
+  </div>
+  <div class="panel-pad block">
+    <div><h3>2. Default account by product type</h3><p class="sub-meta">Every product of this type uses this account, including new products added later in Shopify.</p></div>
+    <div class="scroll"><table><thead><tr><th>Product type</th><th>Products</th><th>Default account</th></tr></thead><tbody>${
+      types.map(t=>{const ps=Object.keys(PRODUCTS).filter(n=>PRODUCTS[n].type===t);
+        return `<tr class="${RULES[t]?'':'unm'}"><td><strong>${esc(t)}</strong></td><td class="sub-meta" style="white-space:normal">${ps.map(esc).join(', ')}</td><td><select data-rule="${esc(t)}" aria-label="Default account for ${esc(t)}">${opts(RULES[t],'No default')}</select></td></tr>`;}).join('')
+    }</tbody></table></div>
+  </div>
+  <div class="panel-pad block">
+    <div><h3>3. Products</h3><p class="sub-meta">Products follow their type's default. Choose a different account only for exceptions.</p></div>
+    <div class="scroll"><table><thead><tr><th>Product or service</th><th>Source app</th><th>Type</th><th>Sales tax</th><th>Account</th><th>Comes from</th></tr></thead><tbody>${
+      prods.map(([n,p])=>{const eff=acctFor(n), r=RULES[p.type];
+        const src=!eff?'<span class="badge warn">Needs account</span>':p.override?'<span class="badge cat">Product exception</span>':'<span class="sub-meta">Type default</span>';
+        return `<tr class="${eff?'':'unm'}"><td><strong>${esc(n)}</strong></td><td>${p.app}</td><td>${esc(p.type)}</td><td>${p.taxable?'CT 6.35%':'Exempt'}</td><td><select data-over="${esc(n)}" aria-label="Account for ${esc(n)}">${opts(p.override,r?`Type default · ${r} ${esc(acctName(r))}`:'Choose account…')}</select></td><td>${src}</td></tr>`;}).join('')
+    }</tbody></table></div>
+  </div>
+  <p class="note">Try it: import the sample export, then set <strong>Special tours</strong> to the new account 01-431200 Lectures &amp; Talks. Curator-Led Tour picks it up and the export unlocks. In the real app every change is saved with an effective date, so re-exporting an old week still uses the codes that applied then.</p>`;
+}
+function doImport(){
+  let n=0,u=0;
+  coaPreview.forEach(r=>{ if(r.status==='new'){ACCOUNTS[r.code]={name:r.name,type:r.type};n++;} else if(r.status==='updated'){ACCOUNTS[r.code]={name:r.name,type:r.type};u++;} });
+  coaPreview=null; coaText=''; render(); toast(`Imported ${n} new, ${u} renamed`);
+}
+
+function panelFE(){
+  const conn=FE.connected
+    ?`<div class="banner ok">Connected to <strong>${FE.env}</strong> as ${FE.user}. The app can read accounts and projects, and create and validate journal entry batches.</div>
+      <div class="actions"><button class="btn" id="feDisconnect">Disconnect</button></div>`
+    :`<div class="banner warn">Not connected. Your Financial Edge NXT administrator approves this app once in Blackbaud's Control Panel. Then a finance user signs in with their Blackbaud ID. Until then, use Download CSV.</div>
+      <div class="actions"><button class="btn primary" id="feConnect">Connect with Blackbaud ID</button></div>`;
+  const hist=FE.batches.slice().sort((a,b)=>b.no-a.no).map(b=>{const t=batchTotals(b);
+    const st=b.status==='Posted'?'<span class="badge ok">Posted</span>':'<span class="badge info">Not posted · waiting for review</span>';
+    return `<tr><td class="mono">${b.no}</td><td>${esc(b.desc)}</td><td class="num">${b.payouts.length}</td><td class="num">${t.entries}</td><td class="num">${money(t.dr)}</td><td>${b.created}</td><td>${st}</td><td>${b.status==='Posted'?'<span class="sub-meta">Locked</span>':`<button class="btn" data-del="${b.no}">Delete batch</button>`}</td></tr>`;}).join('');
+  return `
+  <div class="panel-pad block">
+    <div><h3>Connection</h3><p class="sub-meta">Sends journal entries straight into Financial Edge NXT instead of uploading a file.</p></div>
+    ${conn}
+  </div>
+  <div class="panel-pad block">
+    <div><h3>Batch settings</h3></div>
+    <label class="check"><input type="checkbox" id="feLeaveOpen" ${FE.leaveOpen?'checked':''}><span><strong>Leave each batch unposted for review (recommended)</strong><br><span class="sub-meta">Finance checks the batch in General ledger › Journal entry batches and posts it there. A posted batch cannot be edited.</span></span></label>
+    <label class="field">Default project ID (optional)<input type="text" id="feProject" value="${esc(FE.project)}" placeholder="Leave blank if not used"></label>
+    <label class="check"><input type="checkbox" id="feSim" ${FE.simulateError?'checked':''}><span><strong>Demo only:</strong> simulate a validation error from Financial Edge NXT (for example, a closed fiscal period)</span></label>
+  </div>
+  <div class="panel-pad">
+    <div class="block-head"><div><h3>Sent batches</h3><p class="sub-meta">Each payout goes into one batch only. Deleting an unposted batch lets you send its payouts again.</p></div>
+      <div class="actions"><button class="btn" id="feRefresh" ${FE.batches.some(b=>b.status!=='Posted')?'':'disabled'}>Refresh status</button></div></div>
+    <div class="scroll" style="border:1px solid var(--line);border-radius:10px"><table><thead><tr><th>Batch</th><th>Description</th><th class="num">Payouts</th><th class="num">Entries</th><th class="num">Total debits</th><th>Created</th><th>Status in Financial Edge NXT</th><th></th></tr></thead><tbody>${hist||'<tr><td colspan="8" class="sub-meta">No batches yet.</td></tr>'}</tbody></table></div>
+  </div>
+  <p class="note">Try it: connect, then use <strong>Send to Financial Edge NXT</strong> at the top. In this demo, Refresh status acts as if finance has posted the open batches.</p>`;
+}
+
+function modal(title,body,foot){
+  document.getElementById('modalRoot').innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <div class="card-head"><h2 id="mt">${title}</h2><button class="btn" id="mClose">Close</button></div>
+    <div class="modal-body" id="mBody">${body}</div><div class="modal-foot" id="mFoot">${foot}</div></div></div>`;
+  document.getElementById('mClose').onclick=closeModal;
+  document.getElementById('scrim').onclick=e=>{if(e.target.id==='scrim')closeModal();};
+  document.getElementById('mClose').focus();
+}
+function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+
+function openConnect(thenSend){
+  modal('Sign in with Blackbaud ID',
+    `<div class="banner info">Mock of Blackbaud's consent screen. Real sign-in happens on Blackbaud's site; the app never sees the password.</div>
+    <p style="margin:0"><strong>Financial Reports</strong> wants to connect to <strong>${FE.env}</strong> and:</p>
+    <ul class="perm"><li>Read the chart of accounts and projects</li><li>Create, validate and delete journal entry batches</li><li>Post batches only if you turn that on in Batch settings</li></ul>
+    <p class="sub-meta" style="margin:0">It acts with your own Financial Edge NXT permissions. Your administrator must have approved the app first.</p>`,
+    `<button class="btn" id="cNo">Cancel</button><button class="btn primary" id="cYes">Allow</button>`);
+  document.getElementById('cNo').onclick=closeModal;
+  document.getElementById('cYes').onclick=()=>{FE.connected=true; closeModal(); render(); toast('Connected to Financial Edge NXT'); if(thenSend) openSend();};
+}
+
+function openSend(){
+  if(!FE.connected) return openConnect(true);
+  const D=data();
+  const already=D.payouts.filter(p=>FE.sent[p.id]);
+  const blocked=D.payouts.filter(p=>!FE.sent[p.id]&&p.unmapped.length);
+  const ready=D.payouts.filter(p=>!FE.sent[p.id]&&!p.unmapped.length);
+  const lines=ready.flatMap(p=>p.lines), dr=lines.reduce((s,l)=>s+l.debit,0), cr=lines.reduce((s,l)=>s+l.credit,0);
+  const desc=`Shopify payouts ${niceDate(D.a)} – ${niceDate(D.b)}`.slice(0,60);
+  const skipped=[
+    already.length?`<li>${already.length} payout${already.length>1?'s':''} already in a batch: ${already.map(p=>`#${p.id} (batch ${FE.sent[p.id]})`).join(', ')}</li>`:'',
+    blocked.length?`<li>${blocked.length} payout${blocked.length>1?'s':''} waiting for an account code: ${blocked.map(p=>`#${p.id} (${p.unmapped.map(esc).join(', ')})`).join(', ')}</li>`:''].join('');
+  modal(`Send to Financial Edge NXT · ${niceDate(D.a)} – ${niceDate(D.b)}`,
+    `${ready.length?`<div class="banner ok">${ready.length} payout${ready.length>1?'s':''} ready: ${lines.length} journal entries. Debits ${money(dr)} = credits ${money(cr)}.</div>`
+      :`<div class="banner warn">Nothing to send for this date range.</div>`}
+    ${skipped?`<div><div class="sub-meta">Not included:</div><ul class="perm sub-meta">${skipped}</ul></div>`:''}
+    ${ready.length?`<label class="field">Batch description (up to 60 characters)<input type="text" id="sDesc" maxlength="60" value="${esc(desc)}"></label>
+    <label class="check"><input type="checkbox" id="sOpen" ${FE.leaveOpen?'checked':''}><span>Leave the batch unposted so finance can review and post it in Financial Edge NXT</span></label>
+    <div id="sWarn"></div>
+    <ol class="steps" id="sSteps" hidden></ol><div id="sResult"></div>`:''}`,
+    `<button class="btn" id="sCancel">Cancel</button>${ready.length?`<button class="btn primary" id="sGo">Send ${ready.length} payout${ready.length>1?'s':''}</button>`:''}`);
+  document.getElementById('sCancel').onclick=closeModal;
+  if(!ready.length) return;
+  const warn=()=>{document.getElementById('sWarn').innerHTML=document.getElementById('sOpen').checked?'':'<div class="banner warn">The batch will be posted right away. A posted batch cannot be edited or deleted from this app.</div>';};
+  document.getElementById('sOpen').onchange=warn; warn();
+  document.getElementById('sGo').onclick=()=>runSend(ready,lines,document.getElementById('sDesc').value.trim()||desc,document.getElementById('sOpen').checked);
+}
+
+function runSend(ready,lines,desc,leaveOpen){
+  const no=FE.nextNo, fail=FE.simulateError;
+  const steps=[`Create journal entry batch ${no}`,`Add ${lines.length} journal entries from ${ready.length} payouts`,'Validate the batch in Financial Edge NXT', leaveOpen?'Leave the batch unposted for review':'Post the batch'];
+  ['sGo','sCancel','sDesc','sOpen'].forEach(id=>{const el=document.getElementById(id); if(el) el.disabled=true;});
+  const ol=document.getElementById('sSteps'); ol.hidden=false;
+  const st=steps.map(()=> 'wait');
+  const paint=()=>{ const el=document.getElementById('sSteps'); if(!el) return;
+    el.innerHTML=steps.map((s,i)=>`<li class="${st[i]}"><span class="dot">${st[i]==='done'?'✓':st[i]==='fail'?'✕':''}</span>${s}</li>`).join(''); };
+  let i=0;
+  const tick=()=>{
+    if(!document.getElementById('sSteps')) return;
+    if(i>0) st[i-1]='done';
+    if(fail && i===3){
+      st[2]='fail'; steps[3]=`Delete unfinished batch ${no}`; st[3]='done'; paint();
+      document.getElementById('sResult').innerHTML=`<div class="banner crit"><strong>Financial Edge NXT rejected the batch.</strong> Error returned: “Post date ${usDate(ready[0].date)} is in a closed fiscal period.” The app deleted the unfinished batch, so nothing was recorded. Fix the fiscal period in Financial Edge NXT, or check the post dates, then send again.</div>`;
+      finish(); return;
+    }
+    if(i===steps.length){
+      FE.nextNo++; ready.forEach(p=>FE.sent[p.id]=no);
+      FE.batches.push({no,desc,payouts:ready.map(p=>p.id),status:leaveOpen?'Open':'Posted',created:'Nov 23, 2026'});
+      paint(); render();
+      document.getElementById('sResult').innerHTML=`<div class="banner ok"><strong>Batch ${no} is in Financial Edge NXT</strong> with ${lines.length} entries. ${leaveOpen?'It is not posted yet: open General ledger › Journal entry batches to review and post it.':'It has been posted.'}</div>`;
+      finish(true); return;
+    }
+    st[i]='run'; paint(); i++; setTimeout(tick,650);
+  };
+  const finish=ok=>{const f=document.getElementById('mFoot'); if(!f) return;
+    f.innerHTML=`${ok?'<button class="btn" id="sOpenFe">Open in Financial Edge NXT</button>':''}<button class="btn primary" id="sDone">Done</button>`;
+    document.getElementById('sDone').onclick=closeModal;
+    const o=document.getElementById('sOpenFe'); if(o) o.onclick=()=>toast('Demo: this opens the batch in Financial Edge NXT');
+    document.getElementById('sDone').focus(); render(); };
+  tick();
+}
+
+function render(){
+  const D=data();
+  renderMetrics(D);
+  const allUnm=Object.keys(PRODUCTS).filter(n=>!acctFor(n)).length;
+  const n=document.getElementById('unmCount'); n.hidden=!allUnm; n.textContent=allUnm;
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===state.tab));
+  const navKey=state.tab==='mapping'?'mapping':state.tab==='fe'?'fe':'payouts';
+  document.querySelectorAll('.rail [data-nav]').forEach(b=>{const on=b.dataset.nav===navKey; b.classList.toggle('on',on); if(on) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');});
+  const P={payouts:panelPayouts,categories:panelCategories,tx:panelTx,mapping:panelMapping,fe:panelFE}[state.tab];
+  document.getElementById('panel').innerHTML=P(D);
+}
+
+function csvFor(D){
+  const head=['AMPL','Account description','Post date','Encumbrance','Debit amount','Credit amount','Journal','Journal reference','Project ID','Project description'];
+  const lines=D.payouts.flatMap(p=>p.lines);
+  const q=s=>/[",]/.test(s)?'"'+String(s).replace(/"/g,'""')+'"':s;
+  const out=[head.join(',')].concat(lines.map(l=>[l.acct||'UNMAPPED',acctName(l.acct),usDate(l.date),'Regular',l.debit?plain(l.debit):'',l.credit?plain(l.credit):'','General Journal',l.ref,FE.project,''].map(q).join(',')));
+  return {text:out.join('\n'), lines};
+}
+function openExport(){
+  const D=data(); const {text,lines}=csvFor(D);
+  const dr=lines.reduce((s,l)=>s+l.debit,0), cr=lines.reduce((s,l)=>s+l.credit,0);
+  const blocked=D.unmapped.length>0;
+  document.getElementById('modalRoot').innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <div class="card-head"><h2 id="mt">Export journal · ${niceDate(D.a)} – ${niceDate(D.b)}</h2><button class="btn" id="mClose">Close</button></div>
+    <div class="modal-body">
+      ${blocked?`<div class="banner warn"><strong>${D.unmapped.join(', ')}</strong> has no account code. Map it on the Account mapping tab before exporting.</div>`
+        :`<div class="banner ok">${lines.length} journal lines from ${D.payouts.length} payouts. Debits ${money(dr)} = credits ${money(cr)}.</div>`}
+      <div class="sub-meta">Preview of the upload file, in the same column layout as the current Financial Edge NXT batch upload.</div>
+      <pre class="csv">${esc(text)}</pre>
+    </div>
+    <div class="modal-foot"><span class="sub-meta" style="margin-right:auto;align-self:center">In the real app this downloads a .csv file.</span><button class="btn" id="mCopy" ${blocked?'disabled':''}>Copy CSV</button></div>
+  </div></div>`;
+  const close=()=>document.getElementById('modalRoot').innerHTML='';
+  document.getElementById('mClose').onclick=close;
+  document.getElementById('scrim').onclick=e=>{if(e.target.id==='scrim')close();};
+  document.getElementById('mCopy').onclick=()=>{
+    navigator.clipboard?.writeText(text).then(()=>toast('Copied CSV')).catch(()=>{const r=document.createRange();r.selectNodeContents(document.querySelector('pre.csv'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Text selected. Press Ctrl/Cmd+C to copy');});
+  };
+  document.getElementById('mClose').focus();
+}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modalRoot').innerHTML='';});
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('.tab'); if(!b)return; state.tab=b.dataset.tab; try{localStorage.setItem('fr-tab',state.tab)}catch(err){} render();});
+document.getElementById('panel').addEventListener('click',e=>{
+  const id0=e.target.id;
+  if(id0==='feConnect'){ openConnect(false); return; }
+  if(id0==='feDisconnect'){ FE.connected=false; render(); toast('Disconnected'); return; }
+  if(id0==='feRefresh'){ const open=FE.batches.filter(b=>b.status!=='Posted'); open.forEach(b=>b.status='Posted'); render(); toast(`Batch ${open.map(b=>b.no).join(', ')} now shows as Posted`); return; }
+  const del=e.target.closest('[data-del]');
+  if(del){ const no=+del.dataset.del; const b=FE.batches.find(x=>x.no===no);
+    if(!confirm(`Delete unposted batch ${no} in Financial Edge NXT? Its ${b.payouts.length} payout(s) can then be sent again.`)) return;
+    b.payouts.forEach(id=>delete FE.sent[id]); FE.batches=FE.batches.filter(x=>x.no!==no); render(); toast(`Deleted batch ${no}`); return; }
+  if(id0==='coaSync'){ coaText=SAMPLE_COA; coaPreview=parseCoa(coaText); render(); toast('Read the account list from Financial Edge NXT. Review and import below.'); return; }
+  if(id0==='coaSample'){ coaText=SAMPLE_COA; coaPreview=parseCoa(coaText); render(); return; }
+  if(id0==='coaPreviewBtn'){ coaText=document.getElementById('coaText').value; coaPreview=parseCoa(coaText); if(!coaPreview.length) toast('Paste or choose a file first'); render(); return; }
+  if(id0==='coaImport'){ doImport(); return; }
+  if(id0==='coaCancel'){ coaPreview=null; render(); return; }
+  if(id0==='addAcct'){
+    const code=document.getElementById('newCode').value.trim(), name=document.getElementById('newName').value.trim();
+    if(!/^\d{2}-\d{6}$/.test(code)){ toast('Use the format 01-000000'); return; }
+    if(!name){ toast('Add a description'); return; }
+    ACCOUNTS[code]={name,type:TYPE_BY_DIGIT[code[3]]||'Other'}; render(); toast(`Added ${code}`); return;
+  }
+  const ot=e.target.closest('tr.order'); if(ot){ const k=ot.dataset.k; state.openTx.has(k)?state.openTx.delete(k):state.openTx.add(k); render(); return; }
+  const tr=e.target.closest('tr.payout'); if(!tr)return; const id=tr.dataset.id;
+  state.open.has(id)?state.open.delete(id):state.open.add(id); render();
+});
+document.getElementById('panel').addEventListener('input',e=>{ if(e.target.id==='coaText') coaText=e.target.value; if(e.target.id==='feProject') FE.project=e.target.value.trim(); });
+document.getElementById('panel').addEventListener('change',e=>{
+  if(e.target.id==='coaFile'&&e.target.files[0]){
+    const r=new FileReader(); r.onload=()=>{ coaText=String(r.result); coaPreview=parseCoa(coaText); render(); };
+    r.onerror=()=>toast('Could not read that file'); r.readAsText(e.target.files[0]); return;
+  }
+  if(e.target.id==='feLeaveOpen'){ FE.leaveOpen=e.target.checked; toast(FE.leaveOpen?'Batches stay unposted for review':'Batches will be posted automatically'); return; }
+  if(e.target.id==='feSim'){ FE.simulateError=e.target.checked; return; }
+  if(e.target.dataset.rule!==undefined){ RULES[e.target.dataset.rule]=e.target.value||null; render(); toast('Default saved'); return; }
+  if(e.target.dataset.over!==undefined){ PRODUCTS[e.target.dataset.over].override=e.target.value||null; render(); toast(e.target.value?'Exception saved':'Using type default'); return; }
+});
+document.getElementById('range').addEventListener('change',e=>{state.range=e.target.value; document.getElementById('customWrap').hidden=state.range!=='custom'; render();});
+['from','to'].forEach(id=>document.getElementById(id).addEventListener('change',render));
+document.getElementById('exportBtn').addEventListener('click',openExport);
+document.getElementById('sendBtn').addEventListener('click',openSend);
+document.querySelector('.rail').addEventListener('click',e=>{const b=e.target.closest('[data-nav]'); if(!b)return; state.tab=b.dataset.nav; try{localStorage.setItem('fr-tab',state.tab)}catch(err){} render(); document.querySelector('.tabs').scrollIntoView({block:'nearest'});});
+render();
+</script>
+
